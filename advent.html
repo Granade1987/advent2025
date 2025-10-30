@@ -28,24 +28,37 @@
     }
 
     .door {
-      background: #000;
-      color: #fff;
       border: 2px solid #000;
       border-radius: 8px;
       padding: 25px 0;
       font-size: 1.3rem;
-      cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 3px 6px rgba(0,0,0,0.2);
       user-select: none;
     }
 
-    .door:hover {
+    /* Actieve dagen (tot en met vandaag) */
+    .door.active {
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .door.active:hover {
       background: #fff;
       color: #000;
       transform: scale(1.05);
     }
 
+    /* Toekomstige dagen (na vandaag) */
+    .door.disabled {
+      background: #ccc;
+      color: #666;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    /* Geopende dagen */
     .door.open {
       background: #fff;
       color: #000;
@@ -84,7 +97,7 @@
   <div id="rewardBox" class="reward"></div>
 
   <script>
-    // === 1️⃣ Stel hier de inhoud van elke dag in ===
+    // === 1️⃣ Inhoud per dag instellen ===
     const rewards = {
       1: "🎁 10% korting op alles! Code: DEC10",
       2: "<img src='https://via.placeholder.com/300x150?text=Dag+2'><p>Gratis verzending vandaag!</p>",
@@ -94,12 +107,10 @@
       24: "<img src='https://via.placeholder.com/300x150?text=Vrolijk+Kerstfeest!'><p>🌟 Vrolijk kerstfeest en bedankt voor 2025!</p>"
     };
 
-    // === 2️⃣ Basisvariabelen ===
+    // === 2️⃣ Variabelen ===
     const calendar = document.getElementById('calendar');
     const rewardBox = document.getElementById('rewardBox');
     const today = new Date().getDate();
-
-    // === 3️⃣ Geopende dagen opslaan in localStorage ===
     const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
 
     function saveOpenedDay(day) {
@@ -109,25 +120,33 @@
       }
     }
 
-    // === 4️⃣ Kalender genereren ===
+    // === 3️⃣ Kalender genereren ===
     for (let i = 1; i <= 24; i++) {
       const door = document.createElement('div');
-      door.classList.add('door');
       door.textContent = i;
 
-      // Controleer of dit vakje al geopend is
-      if (openedDays.includes(i)) {
-        door.classList.add('open');
+      // Markeer toekomstige dagen
+      if (i > today) {
+        door.classList.add('door', 'disabled');
+      } else {
+        door.classList.add('door', 'active');
       }
 
+      // Herstel geopende status
+      if (openedDays.includes(i)) {
+        door.classList.add('open');
+        door.classList.remove('active');
+      }
+
+      // Klikfunctionaliteit alleen voor actieve dagen
       door.addEventListener('click', () => {
-        if (i > today) {
-          alert('Nog even wachten tot dag ' + i + ' 😉');
-          return;
+        if (door.classList.contains('disabled')) {
+          return; // niks doen
         }
 
         if (!door.classList.contains('open')) {
           door.classList.add('open');
+          door.classList.remove('active');
           saveOpenedDay(i);
           rewardBox.innerHTML = rewards[i] || "Nog niets ingesteld 🎁";
           rewardBox.style.display = 'block';
