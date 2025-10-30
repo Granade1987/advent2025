@@ -97,67 +97,56 @@
   <div id="rewardBox" class="reward"></div>
 
   <script>
-    // === 1️⃣ Inhoud per dag instellen ===
-    const rewards = {
-      1: "🎁 10% korting op alles! Code: DEC10",
-      2: "<img src='https://via.placeholder.com/300x150?text=Dag+2'><p>Gratis verzending vandaag!</p>",
-      3: "⭐ Dubbele punten op je volgende bestelling!",
-      4: "🎄 15% korting op kerstdecoratie!",
-      5: "🎅 Gratis verpakking bij elke bestelling!",
-      24: "<img src='https://via.placeholder.com/300x150?text=Vrolijk+Kerstfeest!'><p>🌟 Vrolijk kerstfeest en bedankt voor 2025!</p>"
-    };
+const rewards = {
+  1: "🎁 10% korting op alles! Code: DEC10",
+  2: "<img src='https://via.placeholder.com/300x150?text=Dag+2'><p>Gratis verzending vandaag!</p>",
+  3: "⭐ Dubbele punten op je volgende bestelling!",
+  4: "🎄 15% korting op kerstdecoratie!",
+  5: "🎅 Gratis verpakking bij elke bestelling!",
+  24: "<img src='https://via.placeholder.com/300x150?text=Vrolijk+Kerstfeest!'><p>🌟 Vrolijk kerstfeest en bedankt voor 2025!</p>"
+};
 
-    // === 2️⃣ Variabelen ===
-    const calendar = document.getElementById('calendar');
-    const rewardBox = document.getElementById('rewardBox');
-    const today = new Date().getDate();
-    const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
+const calendar = document.getElementById('calendar');
+const rewardBox = document.getElementById('rewardBox');
+const now = new Date();
+const today = now.getDate();
+const month = now.getMonth(); // 0 = januari, 11 = december
+const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
 
-    function saveOpenedDay(day) {
-      if (!openedDays.includes(day)) {
-        openedDays.push(day);
-        localStorage.setItem('openedDays', JSON.stringify(openedDays));
-      }
-    }
+function saveOpenedDay(day) {
+  if (!openedDays.includes(day)) {
+    openedDays.push(day);
+    localStorage.setItem('openedDays', JSON.stringify(openedDays));
+  }
+}
 
-    // === 3️⃣ Kalender genereren ===
-    for (let i = 1; i <= 24; i++) {
-      const door = document.createElement('div');
-      door.textContent = i;
+for (let i = 1; i <= 24; i++) {
+  const door = document.createElement('div');
+  door.textContent = i;
+  door.classList.add('door');
 
-      // Markeer toekomstige dagen
-      if (i > today) {
-        door.classList.add('door', 'disabled');
-      } else {
-        door.classList.add('door', 'active');
-      }
+  // Alleen vakjes tot vandaag in december klikbaar
+  if (month === 11 && i <= today) {
+    door.classList.add('active');
+  } else if (openedDays.includes(i)) {
+    door.classList.add('open');
+  } else {
+    door.classList.add('disabled');
+  }
 
-      // Herstel geopende status
-      if (openedDays.includes(i)) {
-        door.classList.add('open');
-        door.classList.remove('active');
-      }
+  door.addEventListener('click', () => {
+    if (!door.classList.contains('active')) return;
 
-      // Klikfunctionaliteit alleen voor actieve dagen
-      door.addEventListener('click', () => {
-        if (door.classList.contains('disabled')) {
-          return; // niks doen
-        }
+    door.classList.add('open');
+    door.classList.remove('active');
+    saveOpenedDay(i);
+    rewardBox.innerHTML = rewards[i] || "Nog niets ingesteld 🎁";
+    rewardBox.style.display = 'block';
+  });
 
-        if (!door.classList.contains('open')) {
-          door.classList.add('open');
-          door.classList.remove('active');
-          saveOpenedDay(i);
-          rewardBox.innerHTML = rewards[i] || "Nog niets ingesteld 🎁";
-          rewardBox.style.display = 'block';
-        } else {
-          rewardBox.innerHTML = rewards[i] || "🎁 Al geopend!";
-          rewardBox.style.display = 'block';
-        }
-      });
+  calendar.appendChild(door);
+}
+</script>
 
-      calendar.appendChild(door);
-    }
-  </script>
 </body>
 </html>
