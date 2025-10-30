@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Adventskalender 2025</title>
+  
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -22,14 +23,26 @@
       margin-top: 20px;
       font-size: 2.5rem;
     }
+
+    /* Standaard (Mobiele) Stijl: 2 Kolommen */
     .calendar {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); 
+      grid-template-columns: repeat(2, 1fr); 
       gap: 15px;
-      max-width: 700px; 
+      max-width: 400px; 
       margin: 30px auto;
       padding: 10px;
     }
+
+    /* Media Query voor Grotere Schermen (Desktop/Tablet): 4 Kolommen */
+    @media (min-width: 600px) {
+        .calendar {
+            grid-template-columns: repeat(4, 1fr); 
+            max-width: 700px;
+        }
+    }
+
+    /* Stijlen voor de Flip-Animatie */
     .door-container {
       width: 100%;
       height: 120px;
@@ -75,7 +88,7 @@
       background: #000;
       color: #fff;
       transform: rotateY(180deg);
-      font-size: 1.2rem;
+      font-size: 1rem;
       line-height: 1.3;
       overflow: hidden;
     }
@@ -106,7 +119,6 @@
     .reward {
       display: none;
     }
-
     /* Stijl voor de resetknop */
     #resetButton {
         margin: 20px auto;
@@ -123,133 +135,139 @@
         background-color: #c9302c;
     }
   </style>
+
+  <script defer>
+    
+    // *** PLATTE TEKST BELONINGEN: PAS HIER DIRECT DE INHOUD AAN! ***
+    const rewards = {
+      "1": "10% korting op alles!\nCode: DEC10",
+      "2": "Gratis verzending vandaag!",
+      "3": "Dubbele punten op je volgende bestelling!",
+      "4": "15% korting op kerstdecoratie!",
+      "5": "Gratis verpakking bij elke bestelling!",
+      "6": "€5,- extra korting op je bestelling!",
+      "7": "Verdien een verrassingscadeau bij aankoop.",
+      "8": "12% korting op ALLE scheerproducten!",
+      "9": "Gratis monster van onze nieuwe crème.",
+      "10": "Koop 2, krijg 1 gratis op onze topverkopers.",
+      "11": "20% korting op alle baardverzorging.",
+      "12": "Verwen jezelf! Gratis massageolie bij aankoop.",
+      "13": "Korting op een cadeaubon voor een vriend.",
+      "14": "Vandaag alleen: Geen verzendkosten!",
+      "15": "Ontvang 15% korting op onze herfstcollectie.",
+      "16": "Speciale 'Mike's Best' bundel voor €49.",
+      "17": "500 extra spaarpunten op je account.",
+      "18": "1+1 gratis op alle geuren!",
+      "19": "25% korting op alle tools en accessoires.",
+      "20": "Gratis Mike's muts bij besteding boven €30.",
+      "21": "Tijd voor luxe: 30% korting op premium merken.",
+      "22": "Gratis gepersonaliseerde gravering.",
+      "23": "Grote verrassing! 50% korting op één product.",
+      "24": "Vrolijk kerstfeest en bedankt voor 2025!"
+    };
+
+    const calendar = document.getElementById('calendar');
+    const now = new Date();
+    const today = now.getDate();
+    const month = now.getMonth(); 
+    const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
+
+    function saveOpenedDay(day) {
+      if (!openedDays.includes(day)) {
+        openedDays.push(day);
+        localStorage.setItem('openedDays', JSON.stringify(openedDays));
+      }
+    }
+
+    function setRewardText(day, doorBackElement) {
+        const rewardText = rewards[day] ? rewards[day].replace(/\n/g, '<br>') : "Nog niets ingesteld 🎁";
+        doorBackElement.innerHTML = rewardText;
+    }
+
+    function resetCalendar() {
+        if (confirm("Weet u zeker dat u de kalender wilt resetten? Alle geopende vakjes worden gewist.")) {
+            localStorage.removeItem('openedDays');
+            window.location.reload();
+        }
+    }
+
+    // Koppel de resetknop nadat de DOM geladen is
+    document.addEventListener('DOMContentLoaded', () => {
+        const resetButton = document.getElementById('resetButton');
+        if (resetButton) {
+            resetButton.addEventListener('click', resetCalendar);
+        }
+    });
+
+
+    // --- CONTROLE LOGICA ---
+    for (let i = 1; i <= 24; i++) {
+      const doorContainer = document.createElement('div');
+      doorContainer.classList.add('door-container');
+      
+      const door = document.createElement('div');
+      door.classList.add('door');
+
+      const doorFront = document.createElement('div');
+      doorFront.classList.add('door-front');
+      doorFront.textContent = i;
+
+      const doorBack = document.createElement('div');
+      doorBack.classList.add('door-back');
+      
+      door.appendChild(doorFront);
+      door.appendChild(doorBack);
+      doorContainer.appendChild(door);
+
+      const isDecember = month === 11;
+      const isOctoberTest = month === 9; 
+
+      let isActiveDay = false;
+
+      // *** START TESTMODUS: Vakjes actief in oktober (VERWIJDER DEZE HELE IF-BLOK VOOR DE LIVE-GANG IN DECEMBER!) ***
+      if (isOctoberTest && i <= 24) { 
+          isActiveDay = true;
+      }
+      
+      // ECHTE LOGICA voor december:
+      else if (isDecember && i <= today) {
+          isActiveDay = true;
+      }
+      
+      if (openedDays.includes(i)) {
+        doorContainer.classList.add('open');
+        setRewardText(i, doorBack);
+      } 
+      else if (isActiveDay) {
+        doorContainer.classList.add('active');
+        doorContainer.addEventListener('click', () => {
+          if (!doorContainer.classList.contains('active')) return;
+
+          setRewardText(i, doorBack); 
+          
+          doorContainer.classList.add('open');
+          doorContainer.classList.remove('active');
+          saveOpenedDay(i);
+        });
+      } 
+      else {
+        doorContainer.classList.add('disabled');
+      }
+
+      calendar.appendChild(doorContainer);
+    }
+  </script>
 </head>
+
 <body>
+
+  <img src="URL/NAAR/JE/MIKES/LOGO.png" alt="Mike's Just For Men Logo" id="logo">
+
   <h1>🎄 Mikes Adventskalender 2025 🎁</h1>
   <div class="calendar" id="calendar"></div>
   <div id="rewardBox" class="reward"></div> 
 
   <button id="resetButton">🔄 Kalender Resetten (alle vakjes dicht)</button>
-
-<script>
-// *** PLATTE TEKST BELONINGEN: PAS HIER DIRECT DE INHOUD AAN! ***
-const rewards = {
-  "1": "10% korting op alles!\nCode: DEC10",
-  "2": "🚚 <br>Gratis verzending ALLEEN vandaag!",
-  "3": "Dubbele punten op je volgende bestelling!",
-  "4": "15% korting op kerstdecoratie!",
-  "5": "Gratis verpakking bij elke bestelling!",
-  "6": "€5,- extra korting op je bestelling!",
-  "7": "Verdien een verrassingscadeau bij aankoop.",
-  "8": "12% korting op ALLE scheerproducten!",
-  "9": "Gratis monster van onze nieuwe crème.",
-  "10": "Koop 2, krijg 1 gratis op onze topverkopers.",
-  "11": "20% korting op alle baardverzorging.",
-  "12": "Verwen jezelf! Gratis massageolie bij aankoop.",
-  "13": "Korting op een cadeaubon voor een vriend.",
-  "14": "Vandaag alleen: Geen verzendkosten!",
-  "15": "Ontvang 15% korting op onze herfstcollectie.",
-  "16": "Speciale 'Mike's Best' bundel voor €49.",
-  "17": "500 extra spaarpunten op je account.",
-  "18": "1+1 gratis op alle geuren!",
-  "19": "25% korting op alle tools en accessoires.",
-  "20": "Gratis Mike's muts bij besteding boven €30.",
-  "21": "Tijd voor luxe: 30% korting op premium merken.",
-  "22": "Gratis gepersonaliseerde gravering.",
-  "23": "Grote verrassing! 50% korting op één product.",
-  "24": "🎁 🪅 Vrolijk kerstfeest en bedankt voor 2025!"
-};
-
-const calendar = document.getElementById('calendar');
-const now = new Date();
-const today = now.getDate();
-const month = now.getMonth(); // 0 = januari, 9 = oktober, 11 = december
-const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
-
-function saveOpenedDay(day) {
-  if (!openedDays.includes(day)) {
-    openedDays.push(day);
-    localStorage.setItem('openedDays', JSON.stringify(openedDays));
-  }
-}
-
-// Functie om de beloningstekst in het vakje te zetten
-function setRewardText(day, doorBackElement) {
-    const rewardText = rewards[day] ? rewards[day].replace(/\n/g, '<br>') : "Nog niets ingesteld 🎁";
-    doorBackElement.innerHTML = rewardText;
-}
-
-// Functie om de kalender te resetten (voor testen)
-function resetCalendar() {
-    if (confirm("Weet u zeker dat u de kalender wilt resetten? Alle geopende vakjes worden gewist.")) {
-        localStorage.removeItem('openedDays');
-        window.location.reload();
-    }
-}
-document.getElementById('resetButton').addEventListener('click', resetCalendar);
-
-
-// --- CONTROLE LOGICA ---
-for (let i = 1; i <= 24; i++) {
-  const doorContainer = document.createElement('div');
-  doorContainer.classList.add('door-container');
-  
-  const door = document.createElement('div');
-  door.classList.add('door');
-
-  const doorFront = document.createElement('div');
-  doorFront.classList.add('door-front');
-  doorFront.textContent = i; // Nummer op de voorkant
-
-  const doorBack = document.createElement('div');
-  doorBack.classList.add('door-back');
-  
-  door.appendChild(doorFront);
-  door.appendChild(doorBack);
-  doorContainer.appendChild(door);
-
-  const isDecember = month === 11;
-  const isOctoberTest = month === 9; // Dit is nu (oktober 2025)
-
-  let isActiveDay = false;
-
-  // *** START TESTMODUS: Vakjes actief in oktober (DEZE REGEL VERWIJDEREN VOOR LIVE-GANG IN DECEMBER!) ***
-  if (isOctoberTest && i <= 24) { 
-      isActiveDay = true;
-  }
-  
-  // ECHTE LOGICA voor december:
-  else if (isDecember && i <= today) {
-      isActiveDay = true;
-  }
-  
-  // 3. Controleer of het al geopend is
-  if (openedDays.includes(i)) {
-    doorContainer.classList.add('open');
-    setRewardText(i, doorBack); // Tekst invullen als de deur al open is
-  } 
-  // 4. Controleer of het een actieve dag is (nog niet geopend)
-  else if (isActiveDay) {
-    doorContainer.classList.add('active');
-    // Klik-actie om de dag te openen
-    doorContainer.addEventListener('click', () => {
-      if (!doorContainer.classList.contains('active')) return;
-
-      setRewardText(i, doorBack); // Tekst invullen bij de klik
-      
-      doorContainer.classList.add('open');
-      doorContainer.classList.remove('active');
-      saveOpenedDay(i);
-    });
-  } 
-  // 5. Anders is het een uitgeschakelde dag
-  else {
-    doorContainer.classList.add('disabled');
-  }
-
-  calendar.appendChild(doorContainer);
-}
-</script>
 
 </body>
 </html>
