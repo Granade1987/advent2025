@@ -12,11 +12,12 @@
       margin: 0;
       padding: 0;
     }
+
     h1 {
       margin-top: 30px;
       font-size: 2.5rem;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
+
     .calendar {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -25,6 +26,7 @@
       margin: 30px auto;
       padding: 10px;
     }
+
     .door {
       background: #000;
       color: #fff;
@@ -37,18 +39,21 @@
       box-shadow: 0 3px 6px rgba(0,0,0,0.2);
       user-select: none;
     }
+
     .door:hover {
       background: #fff;
       color: #000;
       transform: scale(1.05);
     }
+
     .door.open {
       background: #fff;
       color: #000;
       border: 2px solid #000;
-      transform: rotateY(0deg);
+      transform: none;
       box-shadow: 0 3px 6px rgba(0,0,0,0.4);
     }
+
     .reward {
       display: none;
       margin-top: 15px;
@@ -61,10 +66,12 @@
       margin-left: auto;
       margin-right: auto;
     }
+
     .reward img {
       max-width: 100%;
       border-radius: 4px;
     }
+
     .reward a {
       color: #000;
       text-decoration: underline;
@@ -77,30 +84,56 @@
   <div id="rewardBox" class="reward"></div>
 
   <script>
+    // === 1️⃣ Stel hier de inhoud van elke dag in ===
     const rewards = {
       1: "🎁 10% korting op alles! Code: DEC10",
       2: "<img src='https://via.placeholder.com/300x150?text=Dag+2'><p>Gratis verzending vandaag!</p>",
       3: "⭐ Dubbele punten op je volgende bestelling!",
-      // … (rest blijft zoals je zelf invult)
+      4: "🎄 15% korting op kerstdecoratie!",
+      5: "🎅 Gratis verpakking bij elke bestelling!",
       24: "<img src='https://via.placeholder.com/300x150?text=Vrolijk+Kerstfeest!'><p>🌟 Vrolijk kerstfeest en bedankt voor 2025!</p>"
     };
 
+    // === 2️⃣ Basisvariabelen ===
     const calendar = document.getElementById('calendar');
     const rewardBox = document.getElementById('rewardBox');
     const today = new Date().getDate();
 
+    // === 3️⃣ Geopende dagen opslaan in localStorage ===
+    const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
+
+    function saveOpenedDay(day) {
+      if (!openedDays.includes(day)) {
+        openedDays.push(day);
+        localStorage.setItem('openedDays', JSON.stringify(openedDays));
+      }
+    }
+
+    // === 4️⃣ Kalender genereren ===
     for (let i = 1; i <= 24; i++) {
       const door = document.createElement('div');
       door.classList.add('door');
       door.textContent = i;
 
+      // Controleer of dit vakje al geopend is
+      if (openedDays.includes(i)) {
+        door.classList.add('open');
+      }
+
       door.addEventListener('click', () => {
-        if (i <= today) {
+        if (i > today) {
+          alert('Nog even wachten tot dag ' + i + ' 😉');
+          return;
+        }
+
+        if (!door.classList.contains('open')) {
           door.classList.add('open');
+          saveOpenedDay(i);
           rewardBox.innerHTML = rewards[i] || "Nog niets ingesteld 🎁";
           rewardBox.style.display = 'block';
         } else {
-          alert('Nog even wachten tot dag ' + i + ' 😉');
+          rewardBox.innerHTML = rewards[i] || "🎁 Al geopend!";
+          rewardBox.style.display = 'block';
         }
       });
 
