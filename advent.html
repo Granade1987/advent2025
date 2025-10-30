@@ -13,7 +13,7 @@
       padding: 0;
     }
 
-    /* NIEUW: Stijl voor het logo */
+    /* Stijl voor het logo */
     #logo {
       max-width: 250px; /* Pas breedte aan indien nodig */
       height: auto;
@@ -115,6 +115,7 @@ const rewards = {
   4: "🎄 15% korting op kerstdecoratie!",
   5: "🎅 Gratis verpakking bij elke bestelling!",
   24: "<img src='https://via.placeholder.com/300x150?text=Vrolijk+Kerstfeest!'><p>🌟 Vrolijk kerstfeest en bedankt voor 2025!</p>"
+  // Voeg hier meer dagen toe, bv: 6: "Nieuwe beloning",
 };
 
 const calendar = document.getElementById('calendar');
@@ -147,7 +148,8 @@ for (let i = 1; i <= 24; i++) {
     });
   } 
   // 2. Controleer of het een actieve dag is (in december, vandaag of eerder)
-  else if (month === 11 && i <= today) {
+  // **LET OP: 'month === 11' betekent december. Verander dit naar 'month === 9' (oktober) om nu te testen!
+  else if (month === 11 && i <= today) { 
     door.classList.add('active');
     // Voeg de click listener toe om te openen
     door.addEventListener('click', () => {
