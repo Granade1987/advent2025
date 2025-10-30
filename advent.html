@@ -15,13 +15,14 @@
 
     /* Stijl voor het logo */
     #logo {
-      max-width: 250px; /* Pas breedte aan indien nodig */
+      /* PAS DEZE AFBEELDING AAN NAAR JE ECHTE LOGO-LINK */
+      max-width: 250px; 
       height: auto;
       margin-top: 20px;
     }
 
     h1 {
-      margin-top: 20px; /* Iets minder marge door logo */
+      margin-top: 20px;
       font-size: 2.5rem;
     }
 
@@ -72,7 +73,7 @@
       border: 2px solid #000;
       transform: none;
       box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-      cursor: pointer; /* Maak open deuren ook klikbaar */
+      cursor: pointer;
     }
 
     .reward {
@@ -101,7 +102,7 @@
 </head>
 <body>
 
-  <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/61693dab0b5365001de73797/0x0.png" alt="Mike's Just For Men Logo" id="logo">
+  <img src="URL/NAAR/JE/MIKES/LOGO.png" alt="Mike's Just For Men Logo" id="logo">
 
   <h1>🎄 Mikes Adventskalender 2025 🎁</h1>
   <div class="calendar" id="calendar"></div>
@@ -114,17 +115,14 @@ const rewards = {
   3: "⭐ Dubbele punten op je volgende bestelling!",
   4: "🎄 15% korting op kerstdecoratie!",
   5: "🎅 Gratis verpakking bij elke bestelling!",
-  6:
-  7:
   24: "<img src='https://via.placeholder.com/300x150?text=Vrolijk+Kerstfeest!'><p>🌟 Vrolijk kerstfeest en bedankt voor 2025!</p>"
-  // Voeg hier meer dagen toe, bv: 6: "Nieuwe beloning",
 };
 
 const calendar = document.getElementById('calendar');
 const rewardBox = document.getElementById('rewardBox');
 const now = new Date();
 const today = now.getDate();
-const month = now.getMonth(); // 0 = januari, 11 = december
+const month = now.getMonth(); // 0 = januari, 9 = oktober, 11 = december
 const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
 
 function saveOpenedDay(day) {
@@ -134,26 +132,40 @@ function saveOpenedDay(day) {
   }
 }
 
-// --- VERBETERDE FUNCTIE/LOGICA ---
+// --- CONTROLE LOGICA ---
 for (let i = 1; i <= 24; i++) {
   const door = document.createElement('div');
   door.textContent = i;
   door.classList.add('door');
 
-  // 1. Controleer eerst of het al geopend is (hoogste prioriteit)
+  // De code om de dagen te activeren (met testmodus)
+  const isDecember = month === 11;
+  const isOctoberTest = month === 9; // Dit is nu (oktober 2025)
+
+  let isActiveDay = false;
+
+  // 1. Logica om de kalender NU te testen in oktober
+  if (isOctoberTest && i <= 24) { // Toon de kalender in oktober
+      isActiveDay = true;
+  }
+  // 2. Logica voor de ECHTE kalender in december
+  else if (isDecember && i <= today) {
+      isActiveDay = true;
+  }
+  
+  // 3. Controleer of het al geopend is
   if (openedDays.includes(i)) {
     door.classList.add('open');
-    // Maak het mogelijk om de beloning opnieuw te zien
+    // Klik-actie om de beloning opnieuw te zien
     door.addEventListener('click', () => {
       rewardBox.innerHTML = rewards[i] || "Nog niets ingesteld 🎁";
       rewardBox.style.display = 'block';
     });
   } 
-  // 2. Controleer of het een actieve dag is (in december, vandaag of eerder)
-  // **LET OP: 'month === 11' betekent december. Verander dit naar 'month === 9' (oktober) om nu te testen!
-  else if (month === 9 && i <= today) {
+  // 4. Controleer of het een actieve dag is
+  else if (isActiveDay) {
     door.classList.add('active');
-    // Voeg de click listener toe om te openen
+    // Klik-actie om de dag te openen
     door.addEventListener('click', () => {
       if (!door.classList.contains('active')) return;
 
@@ -164,7 +176,7 @@ for (let i = 1; i <= 24; i++) {
       rewardBox.style.display = 'block';
     });
   } 
-  // 3. Anders is het een toekomstige, uitgeschakelde dag
+  // 5. Anders is het een uitgeschakelde dag
   else {
     door.classList.add('disabled');
   }
