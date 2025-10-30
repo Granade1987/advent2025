@@ -166,96 +166,100 @@
       "24": "Vrolijk kerstfeest en bedankt voor 2025!"
     };
 
-    const calendar = document.getElementById('calendar');
     const now = new Date();
     const today = now.getDate();
     const month = now.getMonth(); 
     const openedDays = JSON.parse(localStorage.getItem('openedDays')) || [];
 
-    function saveOpenedDay(day) {
-      if (!openedDays.includes(day)) {
-        openedDays.push(day);
-        localStorage.setItem('openedDays', JSON.stringify(openedDays));
-      }
-    }
-
-    function setRewardText(day, doorBackElement) {
-        const rewardText = rewards[day] ? rewards[day].replace(/\n/g, '<br>') : "Nog niets ingesteld 🎁";
-        doorBackElement.innerHTML = rewardText;
-    }
-
-    function resetCalendar() {
-        if (confirm("Weet u zeker dat u de kalender wilt resetten? Alle geopende vakjes worden gewist.")) {
-            localStorage.removeItem('openedDays');
-            window.location.reload();
-        }
-    }
-
-    // Koppel de resetknop nadat de DOM geladen is
-    document.addEventListener('DOMContentLoaded', () => {
+    // Functie om de kalender op te bouwen. Deze wordt pas aangeroepen als de DOM klaar is.
+    function buildCalendar() {
+        const calendar = document.getElementById('calendar');
         const resetButton = document.getElementById('resetButton');
+
+        function saveOpenedDay(day) {
+            if (!openedDays.includes(day)) {
+                openedDays.push(day);
+                localStorage.setItem('openedDays', JSON.stringify(openedDays));
+            }
+        }
+
+        function setRewardText(day, doorBackElement) {
+            const rewardText = rewards[day] ? rewards[day].replace(/\n/g, '<br>') : "Nog niets ingesteld 🎁";
+            doorBackElement.innerHTML = rewardText;
+        }
+
+        function resetCalendar() {
+            if (confirm("Weet u zeker dat u de kalender wilt resetten? Alle geopende vakjes worden gewist.")) {
+                localStorage.removeItem('openedDays');
+                window.location.reload();
+            }
+        }
+        
         if (resetButton) {
             resetButton.addEventListener('click', resetCalendar);
         }
-    });
 
+        // --- CONTROLE LOGICA ---
+        for (let i = 1; i <= 24; i++) {
+            const doorContainer = document.createElement('div');
+            doorContainer.classList.add('door-container');
+            
+            const door = document.createElement('div');
+            door.classList.add('door');
 
-    // --- CONTROLE LOGICA ---
-    for (let i = 1; i <= 24; i++) {
-      const doorContainer = document.createElement('div');
-      doorContainer.classList.add('door-container');
-      
-      const door = document.createElement('div');
-      door.classList.add('door');
+            const doorFront = document.createElement('div');
+            doorFront.classList.add('door-front');
+            doorFront.textContent = i;
 
-      const doorFront = document.createElement('div');
-      doorFront.classList.add('door-front');
-      doorFront.textContent = i;
+            const doorBack = document.createElement('div');
+            doorBack.classList.add('door-back');
+            
+            door.appendChild(doorFront);
+            door.appendChild(doorBack);
+            doorContainer.appendChild(door);
 
-      const doorBack = document.createElement('div');
-      doorBack.classList.add('door-back');
-      
-      door.appendChild(doorFront);
-      door.appendChild(doorBack);
-      doorContainer.appendChild(door);
+            const isDecember = month === 11;
+            const isOctoberTest = month === 9; 
 
-      const isDecember = month === 11;
-      const isOctoberTest = month === 9; 
+            let isActiveDay = false;
 
-      let isActiveDay = false;
+            // *** START TESTMODUS: (VERWIJDER DEZE HELE IF-BLOK VOOR DE LIVE-GANG IN DECEMBER!) ***
+            if (isOctoberTest && i <= 24) { 
+                isActiveDay = true;
+            }
+            
+            // ECHTE LOGICA voor december:
+            else if (isDecember && i <= today) {
+                isActiveDay = true;
+            }
+            
+            if (openedDays.includes(i)) {
+                doorContainer.classList.add('open');
+                setRewardText(i, doorBack);
+            } 
+            else if (isActiveDay) {
+                doorContainer.classList.add('active');
+                doorContainer.addEventListener('click', () => {
+                    if (!doorContainer.classList.contains('active')) return;
 
-      // *** START TESTMODUS: Vakjes actief in oktober (VERWIJDER DEZE HELE IF-BLOK VOOR DE LIVE-GANG IN DECEMBER!) ***
-      if (isOctoberTest && i <= 24) { 
-          isActiveDay = true;
-      }
-      
-      // ECHTE LOGICA voor december:
-      else if (isDecember && i <= today) {
-          isActiveDay = true;
-      }
-      
-      if (openedDays.includes(i)) {
-        doorContainer.classList.add('open');
-        setRewardText(i, doorBack);
-      } 
-      else if (isActiveDay) {
-        doorContainer.classList.add('active');
-        doorContainer.addEventListener('click', () => {
-          if (!doorContainer.classList.contains('active')) return;
+                    setRewardText(i, doorBack); 
+                    
+                    doorContainer.classList.add('open');
+                    doorContainer.classList.remove('active');
+                    saveOpenedDay(i);
+                });
+            } 
+            else {
+                doorContainer.classList.add('disabled');
+            }
 
-          setRewardText(i, doorBack); 
-          
-          doorContainer.classList.add('open');
-          doorContainer.classList.remove('active');
-          saveOpenedDay(i);
-        });
-      } 
-      else {
-        doorContainer.classList.add('disabled');
-      }
-
-      calendar.appendChild(doorContainer);
+            calendar.appendChild(doorContainer);
+        }
     }
+    
+    // Wacht tot de hele HTML-structuur is geladen voordat we de kalender bouwen
+    document.addEventListener('DOMContentLoaded', buildCalendar);
+
   </script>
 </head>
 
